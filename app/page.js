@@ -1,5 +1,7 @@
 "use client";
 
+export const dynamic = "force-dynamic";
+
 import { ref, get, set } from "firebase/database";
 import { db } from "@/app/lib/firebase";
 import AdminCamera from "@/app/components/AdminCamera";
