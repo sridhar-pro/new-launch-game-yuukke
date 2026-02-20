@@ -8,7 +8,7 @@ import {
   matchFaceFromVideo,
 } from "../utils/faceEngine";
 import { ref, onValue } from "firebase/database";
-import { db } from "../lib/firebase";
+import { getFirebaseDB } from "../lib/firebase";
 
 const statusConfig = {
   "Loading models...": {
@@ -31,6 +31,9 @@ export default function AdminCamera({ onUnlock }) {
   const [unlockedList, setUnlockedList] = useState([]);
 
   useEffect(() => {
+    const db = getFirebaseDB();
+    if (!db) return;
+
     const unlockRef = ref(db, "sale/unlocked");
 
     const unsubscribe = onValue(unlockRef, (snapshot) => {

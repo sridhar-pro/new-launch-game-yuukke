@@ -4,7 +4,7 @@ export const dynamic = "force-dynamic";
 
 import { useEffect, useState } from "react";
 import { ref, onValue, set, get } from "firebase/database";
-import { db } from "../../lib/firebase";
+import { getFirebaseDB } from "@/app/lib/firebase";
 
 const persons = [
   { id: 0, name: "Person 1" },
@@ -24,35 +24,56 @@ export default function ManualApprovalPage() {
   const [flashing, setFlashing] = useState(null);
 
   useEffect(() => {
+    const db = getFirebaseDB();
+    if (!db) return;
+
     const unlockRef = ref(db, "sale/unlocked");
+
     const unsubscribe = onValue(unlockRef, (snapshot) => {
-      setUnlocked(snapshot.exists() ? snapshot.val() : []);
+      if (snapshot.exists()) {
+        setUnlocked(snapshot.val()); // ✅ correct setter
+      } else {
+        setUnlocked([]); // ✅ correct setter
+      }
     });
+
     return () => unsubscribe();
   }, []);
 
   const handleApprove = async (id) => {
     setLoading((l) => ({ ...l, [id]: true }));
+
+    const db = getFirebaseDB();
+    if (!db) return;
+
     const unlockRef = ref(db, "sale/unlocked");
     const snapshot = await get(unlockRef);
     const current = snapshot.exists() ? snapshot.val() : [];
+
     if (!current.includes(id)) {
       await set(unlockRef, [...current, id]);
       setFlashing(id);
       setTimeout(() => setFlashing(null), 1200);
     }
+
     setLoading((l) => ({ ...l, [id]: false }));
   };
 
   const handleRevoke = async (id) => {
     setLoading((l) => ({ ...l, [id]: true }));
+
+    const db = getFirebaseDB();
+    if (!db) return;
+
     const unlockRef = ref(db, "sale/unlocked");
     const snapshot = await get(unlockRef);
     const current = snapshot.exists() ? snapshot.val() : [];
+
     await set(
       unlockRef,
       current.filter((i) => i !== id),
     );
+
     setLoading((l) => ({ ...l, [id]: false }));
   };
 

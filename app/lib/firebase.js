@@ -1,6 +1,6 @@
 "use client";
 
-import { initializeApp } from "firebase/app";
+import { initializeApp, getApps, getApp } from "firebase/app";
 import { getDatabase } from "firebase/database";
 
 const firebaseConfig = {
@@ -14,6 +14,17 @@ const firebaseConfig = {
   databaseURL: process.env.NEXT_PUBLIC_FIREBASE_DATABASE_URL,
 };
 
-const app = initializeApp(firebaseConfig);
+let databaseInstance = null;
 
-export const db = getDatabase(app);
+export function getFirebaseDB() {
+  if (typeof window === "undefined") {
+    return null; // prevent SSR execution
+  }
+
+  if (!databaseInstance) {
+    const app = getApps().length ? getApp() : initializeApp(firebaseConfig);
+    databaseInstance = getDatabase(app);
+  }
+
+  return databaseInstance;
+}

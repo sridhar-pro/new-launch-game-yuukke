@@ -3,11 +3,14 @@
 export const dynamic = "force-dynamic";
 
 import { ref, get, set } from "firebase/database";
-import { db } from "../lib/firebase";
+import { getFirebaseDB } from "../lib/firebase";
 import AdminCamera from "../components/AdminCamera";
 
 export default function AdminPage() {
   const handleUnlock = async (id) => {
+    const db = getFirebaseDB();
+    if (!db) return; // prevents SSR crash
+
     const unlockRef = ref(db, "sale/unlocked");
     const snapshot = await get(unlockRef);
 
